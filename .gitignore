@@ -1,0 +1,36 @@
+# Working docs (never committed; see 01-ARCHITECTURE §3)
+docs/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+playwright-report/
+test-results/
+blob-report/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+var/
+
+# Kubernetes local secrets
+deploy/k8s/overlays/dev/.secret.local.yaml
