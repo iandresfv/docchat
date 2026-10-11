@@ -6,6 +6,7 @@ import { experimentHandlers } from "./experiments"
 import { messageHandlers } from "./messages"
 import { pdfHandlers } from "./pdfs"
 import { scoreHandlers } from "./scores"
+import { usageHandlers } from "./usage"
 
 const healthHandlers = [
   http.get("*/ready", () =>
@@ -30,4 +31,5 @@ export const handlers = [
   ...messageHandlers,
   ...scoreHandlers,
   ...experimentHandlers,
+  ...usageHandlers,
 ]

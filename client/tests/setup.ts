@@ -6,11 +6,15 @@ import { afterAll, afterEach, beforeAll, vi } from "vitest"
 
 import { installAuthBridge } from "@/features/auth/session"
 import { resetDb } from "@/mocks/db"
+import { usePreferences } from "@/stores/preferences"
 import { useSession } from "@/stores/session"
+import { useStreamStore } from "@/stores/stream"
 
 import { server } from "./msw/server"
 
 const initialSession = useSession.getState()
+const initialPreferences = usePreferences.getState()
+const initialStream = useStreamStore.getState()
 installAuthBridge()
 
 // Integration tests render whole routes; give async queries room under
@@ -61,5 +65,7 @@ afterEach(() => {
   localStorage.clear()
   resetDb()
   useSession.setState(initialSession, true)
+  usePreferences.setState(initialPreferences, true)
+  useStreamStore.setState(initialStream, true)
 })
 afterAll(() => server.close())

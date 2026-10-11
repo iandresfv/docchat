@@ -12,6 +12,7 @@ import { AppBreadcrumbs } from "./app-breadcrumbs"
 import { AppSidebar } from "./app-sidebar"
 import { MobileNav } from "./mobile-nav"
 import { OfflineBanner } from "./offline-banner"
+import { ShortcutsDialog } from "./shortcuts-dialog"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
@@ -50,6 +51,7 @@ export function AppLayout({
         </div>
       </SidebarInset>
       <MobileNav />
+      <ShortcutsDialog />
     </SidebarProvider>
   )
 }
