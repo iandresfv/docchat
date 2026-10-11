@@ -42,6 +42,11 @@ export default defineConfig([
       ],
       "simple-import-sort/exports": "error",
       "@typescript-eslint/consistent-type-imports": "error",
+      // React Router control flow: `throw redirect(...)` throws a Response.
+      "@typescript-eslint/only-throw-error": [
+        "error",
+        { allow: [{ from: "lib", name: "Response" }] },
+      ],
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
@@ -71,6 +76,9 @@ export default defineConfig([
     rules: {
       "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/array-type": "off",
+      "simple-import-sort/imports": "off",
+      "simple-import-sort/exports": "off",
     },
   },
   {

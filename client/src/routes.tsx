@@ -4,6 +4,13 @@ import { AppLayout } from "@/components/shared/app-layout"
 import { FullPageSpinner } from "@/components/shared/full-page-spinner"
 import { NotFoundPage } from "@/components/shared/not-found-page"
 import { RouteError } from "@/components/shared/route-error"
+import { AuthLayout } from "@/features/auth/components/auth-layout"
+import { UserMenu } from "@/features/auth/components/user-menu"
+import {
+  redirectIfAuthenticated,
+  requireAuth,
+} from "@/features/auth/middleware"
+import { SessionWatcher } from "@/features/auth/session-watcher"
 
 export const routes: RouteObject[] = [
   {
@@ -12,7 +19,36 @@ export const routes: RouteObject[] = [
     hydrateFallbackElement: <FullPageSpinner />,
     children: [
       {
-        element: <AppLayout />,
+        element: <AuthLayout />,
+        middleware: [redirectIfAuthenticated],
+        errorElement: <RouteError />,
+        children: [
+          {
+            path: "signin",
+            lazy: async () => ({
+              Component: (
+                await import("@/features/auth/components/signin-page")
+              ).SigninPage,
+            }),
+          },
+          {
+            path: "signup",
+            lazy: async () => ({
+              Component: (
+                await import("@/features/auth/components/signup-page")
+              ).SignupPage,
+            }),
+          },
+        ],
+      },
+      {
+        element: (
+          <>
+            <SessionWatcher />
+            <AppLayout sidebarFooter={<UserMenu />} />
+          </>
+        ),
+        middleware: [requireAuth],
         errorElement: <RouteError />,
         children: [
           { index: true, element: <Navigate to="/documents" replace /> },

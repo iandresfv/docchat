@@ -3,7 +3,14 @@ import "@testing-library/jest-dom/vitest"
 import { cleanup } from "@testing-library/react"
 import { afterAll, afterEach, beforeAll, vi } from "vitest"
 
+import { installAuthBridge } from "@/features/auth/session"
+import { resetDb } from "@/mocks/db"
+import { useSession } from "@/stores/session"
+
 import { server } from "./msw/server"
+
+const initialSession = useSession.getState()
+installAuthBridge()
 
 // jsdom gaps used by the UI (media queries, observers, scrolling).
 Object.defineProperty(window, "matchMedia", {
@@ -32,5 +39,7 @@ afterEach(() => {
   server.resetHandlers()
   cleanup()
   localStorage.clear()
+  resetDb()
+  useSession.setState(initialSession, true)
 })
 afterAll(() => server.close())

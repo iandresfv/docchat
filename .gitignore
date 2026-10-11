@@ -12,6 +12,7 @@ docs/
 .env
 .env.*
 !.env.example
+!.env.mock
 
 # Node
 node_modules/
