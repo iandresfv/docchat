@@ -9,6 +9,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - App shell with a collapsible sidebar, breadcrumbs, bottom navigation on phones, system/light/dark theme, offline banner, toasts, and per-route error and not-found pages.
 - Sign in and sign up with zod-validated forms, an in-memory access token, single-flight silent refresh on 401 (serialised across tabs), session bootstrap on reload and route guards.
 - Mock API mode (`pnpm dev:mock`): the whole backend contract served from MSW in the browser, shared with the test suite.
+- PDF library with grid and table views, upload dialog with drag and drop and progress, live ingestion status (polling every 3 s while processing, screen-reader announcement when ready) and delete with confirmation.
 ### Infrastructure
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 

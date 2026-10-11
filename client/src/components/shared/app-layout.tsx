@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { Outlet } from "react-router"
 
-import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
@@ -40,10 +39,7 @@ export function AppLayout({
         <OfflineBanner />
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1 max-md:hidden" />
-          <Separator
-            orientation="vertical"
-            className="self-center data-[orientation=vertical]:h-4 max-md:hidden"
-          />
+          <div aria-hidden className="h-4 w-px bg-border max-md:hidden" />
           <AppBreadcrumbs />
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
