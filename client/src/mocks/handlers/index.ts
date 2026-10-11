@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw"
 
 import { authHandlers } from "./auth"
 import { conversationHandlers } from "./conversations"
+import { experimentHandlers } from "./experiments"
 import { messageHandlers } from "./messages"
 import { pdfHandlers } from "./pdfs"
 import { scoreHandlers } from "./scores"
@@ -28,4 +29,5 @@ export const handlers = [
   ...conversationHandlers,
   ...messageHandlers,
   ...scoreHandlers,
+  ...experimentHandlers,
 ]

@@ -14,6 +14,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Chat panel: document-style answers with Markdown, source chips (snippet and similarity on hover, click opens the page), inline `[p.N]` citations, optimistic messages, inline errors with Retry and rate-limit countdown, auto-growing composer, suggested prompts, Markdown export and token/cost meta line.
 - Streaming answers over Server-Sent Events (fetch + `eventsource-parser`): sources render before text, a blinking caret while generating, Stop button and `Esc` to cancel with the partial answer kept, start/complete announcements for screen readers, and a persisted Stream toggle.
 - Thumbs up/down on every answer (optimistic, rolled back on failure) with an optional comment popover.
+- Experiments dashboard: diverging mean-rating bars per LLM, retriever and memory arm (low samples dimmed), sortable combinations table, include-pinned toggle, components glossary and "start pinned conversation" from any combination.
 ### Infrastructure
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 

@@ -10,6 +10,22 @@ export const experimentKeys = {
     [...experimentKeys.all, "summary", { includePinned }] as const,
 }
 
+export function useExperimentSummary(includePinned: boolean) {
+  return useQuery({
+    queryKey: experimentKeys.summary(includePinned),
+    queryFn: () => experimentsApi.summary(includePinned),
+  })
+}
+
+/** Below this many ratings an arm's mean is shown as unreliable (04 §4.4). */
+export const LOW_SAMPLE = 5
+
+export function formatMean(mean: number | null): string {
+  if (mean === null) return "—"
+  const fixed = mean.toFixed(2)
+  return mean > 0 ? `+${fixed}` : fixed
+}
+
 /** The arm catalog rarely changes: cache it for the session. */
 export function useComponentCatalog() {
   return useQuery({
