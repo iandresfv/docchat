@@ -141,3 +141,102 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Assistant answers: document-style prose (04 §3, 15/25). */
+.chat-prose {
+  font-size: 15px;
+  line-height: 25px;
+  overflow-wrap: anywhere;
+}
+.chat-prose > * + * {
+  margin-top: 0.75rem;
+}
+.chat-prose :where(ul, ol) {
+  padding-left: 1.25rem;
+}
+.chat-prose ul {
+  list-style: disc;
+}
+.chat-prose ol {
+  list-style: decimal;
+}
+.chat-prose li + li {
+  margin-top: 0.25rem;
+}
+.chat-prose strong {
+  font-weight: 600;
+}
+.chat-prose :where(h1, h2, h3) {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.chat-prose code {
+  border-radius: 0.25rem;
+  background: var(--muted);
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.chat-prose pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--muted);
+  padding: 0.75rem;
+}
+.chat-prose pre code {
+  background: none;
+  padding: 0;
+}
+.chat-prose a:not([data-cite]) {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.chat-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.chat-prose :where(th, td) {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+}
+.chat-prose blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Citation chip ring after a click (1 s, 04 §4.3). */
+@keyframes cite-ring {
+  from {
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+  to {
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+.animate-cite-ring {
+  animation: cite-ring 1s ease-out;
+}
+
+/* Streaming caret (static under reduced motion via the global rule). */
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.is-streaming .chat-prose > :last-child::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}

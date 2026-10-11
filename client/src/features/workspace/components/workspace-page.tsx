@@ -26,6 +26,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ChatPanel } from "@/features/chat/components/chat-panel"
 import { breakpoints, useMediaQuery } from "@/hooks/use-media-query"
 import { strings } from "@/lib/strings"
 import { useBreadcrumbs } from "@/stores/breadcrumbs"
@@ -33,7 +34,7 @@ import { usePreferences } from "@/stores/preferences"
 
 import { useConversations, usePdfDetail } from "../queries"
 import { useViewer } from "../store"
-import { ChatArea, type WorkspaceControls } from "./chat-area"
+import { type WorkspaceControls } from "./controls"
 import { ConversationList } from "./conversation-list"
 import { PdfViewer } from "./pdf-viewer"
 
@@ -152,12 +153,23 @@ export function WorkspacePage() {
   }
 
   const chat = (
-    <ChatArea
+    <ChatPanel
+      key={active?.id ?? "new"}
       pdf={pdf}
       conversation={active}
       conversationsLoading={conversationsQuery.isPending}
       controls={md ? controls : {}}
+      onSelectConversation={select}
     />
+  )
+
+  const skipLink = (
+    <a
+      href="#composer"
+      className="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
+    >
+      Skip to composer
+    </a>
   )
 
   if (!md) {
@@ -165,8 +177,9 @@ export function WorkspacePage() {
       <Tabs
         value={tab}
         onValueChange={(v) => setTab(v as MobileTab)}
-        className="flex h-full min-h-0 flex-col gap-0"
+        className="relative flex h-full min-h-0 flex-col gap-0"
       >
+        {skipLink}
         <TabsList className="mx-3 mt-2 grid w-auto grid-cols-3">
           <TabsTrigger value="chat">
             <MessagesSquare />
@@ -192,7 +205,8 @@ export function WorkspacePage() {
   }
 
   return (
-    <>
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      {skipLink}
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         {lg && (
           <>
@@ -241,7 +255,7 @@ export function WorkspacePage() {
           {list}
         </SidePanel>
       )}
-    </>
+    </div>
   )
 }
 

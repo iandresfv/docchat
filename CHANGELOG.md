@@ -11,6 +11,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Mock API mode (`pnpm dev:mock`): the whole backend contract served from MSW in the browser, shared with the test suite.
 - PDF library with grid and table views, upload dialog with drag and drop and progress, live ingestion status (polling every 3 s while processing, screen-reader announcement when ready) and delete with confirmation.
 - Document workspace: resizable three-pane layout (conversations, chat, PDF viewer) that collapses to sheets on tablets and tabs on phones; conversation list with component-arm badges, inline rename, delete, pinned combinations and `[`/`]` navigation; native PDF viewer with page navigation and silent download-link refresh.
+- Chat panel: document-style answers with Markdown, source chips (snippet and similarity on hover, click opens the page), inline `[p.N]` citations, optimistic messages, inline errors with Retry and rate-limit countdown, auto-growing composer, suggested prompts, Markdown export and token/cost meta line.
 ### Infrastructure
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 

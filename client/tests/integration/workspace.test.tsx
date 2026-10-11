@@ -64,8 +64,9 @@ describe("workspace", () => {
     const input = screen.getByRole("textbox", { name: "Conversation title" })
     await user.clear(input)
     await user.type(input, "2025 revenue{Enter}")
+    const list = screen.getByRole("list", { name: "Conversations" })
     expect(
-      await screen.findByRole("button", { name: "2025 revenue" })
+      await within(list).findByRole("button", { name: "2025 revenue" })
     ).toBeInTheDocument()
   })
 
