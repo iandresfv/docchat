@@ -65,11 +65,12 @@ export default defineConfig([
     },
   },
   {
-    // shadcn primitives are vendored registry code: keep them as generated.
+    // shadcn primitives are vendored registry code: keep them close to upstream.
     files: ["src/components/ui/**"],
+    extends: [tseslint.configs.disableTypeChecked],
     rules: {
       "react-refresh/only-export-components": "off",
-      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
   {

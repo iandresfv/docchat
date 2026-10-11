@@ -1,17 +1,23 @@
-import { FileText } from "lucide-react"
+import { QueryClientProvider } from "@tanstack/react-query"
+import { useState } from "react"
+import { RouterProvider } from "react-router/dom"
 
-import { strings } from "@/lib/strings"
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { createQueryClient } from "@/lib/query-client"
+import { useThemeSync } from "@/lib/theme"
+import { router } from "@/router"
 
 export function App() {
+  const [queryClient] = useState(createQueryClient)
+  useThemeSync()
+
   return (
-    <main className="flex min-h-svh items-center justify-center p-4">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <FileText className="size-5" aria-hidden />
-        </span>
-        <h1 className="text-xl font-semibold">{strings.app.name}</h1>
-        <p className="text-muted-foreground">{strings.app.tagline}</p>
-      </div>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider delay={300}>
+        <RouterProvider router={router} />
+        <Toaster position="bottom-right" duration={4000} />
+      </TooltipProvider>
+    </QueryClientProvider>
   )
 }

@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
       // Same-origin in dev so the refresh cookie (Path=/api/v1/auth) is sent.
       proxy: {
         "/api": { target: apiTarget, changeOrigin: true },
+        "/ready": { target: apiTarget, changeOrigin: true },
       },
     },
     preview: {

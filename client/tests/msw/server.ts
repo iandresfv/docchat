@@ -1,4 +1,7 @@
+import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 
-/** Per-test handlers are added with `server.use(...)`. */
-export const server = setupServer()
+/** Baseline handlers; tests add their own with `server.use(...)`. */
+export const server = setupServer(
+  http.get("*/ready", () => HttpResponse.json({ status: "ready" }))
+)
