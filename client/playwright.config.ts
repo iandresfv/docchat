@@ -14,11 +14,13 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  // Without E2E_BASE_URL the suite runs against a local preview build.
+  // Without E2E_BASE_URL the suite runs against a preview build in mock mode
+  // (MSW in the browser), so it needs no backend. Point E2E_BASE_URL at the
+  // Tilt stack to run the same flows end to end.
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `pnpm build && exec ./node_modules/.bin/vite preview --port ${port} --strictPort`,
+        command: `pnpm build:mock && exec ./node_modules/.bin/vite preview --mode mock --port ${port} --strictPort`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
