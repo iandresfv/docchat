@@ -1,5 +1,5 @@
 import { ArrowDown } from "lucide-react"
-import { Fragment, type ReactNode } from "react"
+import { Fragment, type ReactNode, useEffect } from "react"
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom"
 
 import type { Message } from "@/api/types"
@@ -73,9 +73,23 @@ export function MessageList({ messages, tail, busy, renderActions }: Props) {
         })}
         {tail}
       </StickToBottom.Content>
+      <FollowNewTurns lastMessage={messages.at(-1)} />
       <JumpToLatest />
     </StickToBottom>
   )
+}
+
+/**
+ * Sending a message always returns to the bottom, even if the reader had
+ * scrolled up (e.g. after opening a citation), so the answer stays in view.
+ */
+function FollowNewTurns({ lastMessage }: { lastMessage: Message | undefined }) {
+  const { scrollToBottom } = useStickToBottomContext()
+  const lastHumanId = lastMessage?.role === "human" ? lastMessage.id : null
+  useEffect(() => {
+    if (lastHumanId) void scrollToBottom()
+  }, [lastHumanId, scrollToBottom])
+  return null
 }
 
 function JumpToLatest() {

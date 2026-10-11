@@ -16,6 +16,8 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Thumbs up/down on every answer (optimistic, rolled back on failure) with an optional comment popover.
 - Experiments dashboard: diverging mean-rating bars per LLM, retriever and memory arm (low samples dimmed), sortable combinations table, include-pinned toggle, components glossary and "start pinned conversation" from any combination.
 - Settings page: theme, default streaming and usage-line preferences, today/month usage against the daily token budget, sign out and sign out everywhere, and a keyboard-shortcut reference (also on `?` anywhere).
+### Fixed
+- Sending a message scrolls the conversation back to the latest turn even after scrolling up or opening a citation.
 ### Infrastructure
 - Client container image: Node build stage → unprivileged nginx (non-root, SPA fallback, immutable asset caching, security headers) proxying `/api` with buffering off for SSE.
 - Playwright end-to-end suite (sign in, upload, streaming chat with stop and rating) plus axe accessibility checks on every main screen; nightly `e2e` workflow.
