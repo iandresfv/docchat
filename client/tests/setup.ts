@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest"
 
-import { cleanup } from "@testing-library/react"
+import { cleanup, configure } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterAll, afterEach, beforeAll, vi } from "vitest"
 
@@ -12,6 +12,10 @@ import { server } from "./msw/server"
 
 const initialSession = useSession.getState()
 installAuthBridge()
+
+// Integration tests render whole routes; give async queries room under
+// parallel load (the default is 1 s).
+configure({ asyncUtilTimeout: 3_000 })
 
 // jsdom has no layout, so every zero-sized rect "hits" a resize handle and
 // react-resizable-panels swallows pointer events. Panels are plain divs here.

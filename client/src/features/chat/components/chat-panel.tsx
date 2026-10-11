@@ -32,6 +32,7 @@ import { useStreamStore } from "@/stores/stream"
 
 import { conversationToMarkdown, downloadText, slugify } from "../export"
 import {
+  OPTIMISTIC_PREFIX,
   optimisticHuman,
   useConversationCache,
   useLatestTurn,
@@ -43,6 +44,7 @@ import { Composer, type ComposerHandle } from "./composer"
 import { EmptyChat } from "./empty-chat"
 import { MessageError } from "./message-error"
 import { MessageList } from "./message-list"
+import { MessageScore } from "./message-score"
 
 interface Props {
   pdf: PdfDetail | undefined
@@ -224,6 +226,11 @@ export function ChatPanel({
         <MessageList
           messages={messages}
           busy={pending}
+          renderActions={(message) =>
+            message.id.startsWith(OPTIMISTIC_PREFIX) ? null : (
+              <MessageScore message={message} />
+            )
+          }
           tail={
             streamDraft ? (
               <StreamingAnswer

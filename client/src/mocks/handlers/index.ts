@@ -4,6 +4,7 @@ import { authHandlers } from "./auth"
 import { conversationHandlers } from "./conversations"
 import { messageHandlers } from "./messages"
 import { pdfHandlers } from "./pdfs"
+import { scoreHandlers } from "./scores"
 
 const healthHandlers = [
   http.get("*/ready", () =>
@@ -26,4 +27,5 @@ export const handlers = [
   ...pdfHandlers,
   ...conversationHandlers,
   ...messageHandlers,
+  ...scoreHandlers,
 ]
