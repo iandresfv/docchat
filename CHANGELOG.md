@@ -16,6 +16,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Thumbs up/down on every answer (optimistic, rolled back on failure) with an optional comment popover.
 - Experiments dashboard: diverging mean-rating bars per LLM, retriever and memory arm (low samples dimmed), sortable combinations table, include-pinned toggle, components glossary and "start pinned conversation" from any combination.
 ### Infrastructure
+- Client container image: Node build stage → unprivileged nginx (non-root, SPA fallback, immutable asset caching, security headers) proxying `/api` with buffering off for SSE.
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 
 [Unreleased]: https://github.com/iandresfv/docchat/commits/main
