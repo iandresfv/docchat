@@ -1,0 +1,22 @@
+{
+  "name": "docchat",
+  "private": true,
+  "description": "Git hooks only (husky + lint-staged); apps live in api/ and client/.",
+  "packageManager": "pnpm@12.6.0",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "client/**/*.{ts,tsx,js}": [
+      "pnpm --dir client exec eslint --fix --no-warn-ignored",
+      "pnpm --dir client exec prettier --write --ignore-unknown"
+    ],
+    "client/**/*.{css,json,md,html}": [
+      "pnpm --dir client exec prettier --write --ignore-unknown"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0"
+  }
+}
