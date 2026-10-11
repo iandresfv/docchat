@@ -230,7 +230,8 @@
     opacity: 0;
   }
 }
-.is-streaming .chat-prose > :last-child::after {
+.is-streaming .chat-prose > :last-child:not(ul, ol)::after,
+.is-streaming .chat-prose > :last-child:is(ul, ol) > li:last-child::after {
   content: "";
   display: inline-block;
   width: 2px;

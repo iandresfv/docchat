@@ -1,6 +1,7 @@
 import { Download, MoreHorizontal, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
+import type { ApiError } from "@/api/errors"
 import type { ConversationSummary, PdfDetail } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import {
   DocumentButton,
   HistoryButton,
@@ -25,6 +27,8 @@ import {
   useRenameConversation,
 } from "@/features/workspace/queries"
 import { useCountdown } from "@/hooks/use-countdown"
+import { usePreferences } from "@/stores/preferences"
+import { useStreamStore } from "@/stores/stream"
 
 import { conversationToMarkdown, downloadText, slugify } from "../export"
 import {
@@ -33,7 +37,8 @@ import {
   useLatestTurn,
   useSendMessage,
 } from "../queries"
-import { PendingAnswer } from "./assistant-message"
+import { useStreamAnswer } from "../stream"
+import { PendingAnswer, StreamingAnswer } from "./assistant-message"
 import { Composer, type ComposerHandle } from "./composer"
 import { EmptyChat } from "./empty-chat"
 import { MessageError } from "./message-error"
@@ -58,23 +63,52 @@ export function ChatPanel({
   const detail = useConversation(conversationId)
   const create = useCreateConversation(pdf?.id ?? "")
   const send = useSendMessage()
+  const streamAnswer = useStreamAnswer()
   const cache = useConversationCache()
   const turn = useLatestTurn(conversationId)
+  const streamDraft = useStreamStore((s) =>
+    conversationId ? s.drafts[conversationId] : undefined
+  )
+  const streamFailure = useStreamStore((s) =>
+    conversationId ? s.failures[conversationId] : undefined
+  )
+  const clearFailure = useStreamStore((s) => s.clearFailure)
+  const streamAnswers = usePreferences((s) => s.streamAnswers)
   const composer = useRef<ComposerHandle>(null)
+  const status = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState("")
 
+  // The most recent failure wins, whichever transport produced it.
+  const failure: Failure | null =
+    streamFailure &&
+    (turn.status !== "error" || streamFailure.at >= turn.submittedAt)
+      ? {
+          error: streamFailure.error,
+          content: streamFailure.content,
+          replaceId: streamFailure.userMessageId,
+          at: streamFailure.at,
+        }
+      : turn.status === "error" && turn.error && turn.variables
+        ? {
+            error: turn.error,
+            content: turn.variables.content,
+            replaceId: turn.variables.optimisticId,
+            at: turn.submittedAt,
+          }
+        : null
+
   const throttled =
-    turn.status === "error" &&
-    (turn.error?.slug === "rate-limited" ||
-      turn.error?.slug === "budget-exceeded")
+    failure?.error.slug === "rate-limited" ||
+    failure?.error.slug === "budget-exceeded"
   const blockedUntil =
-    throttled && turn.error?.retryAfter !== undefined
-      ? turn.submittedAt + turn.error.retryAfter * 1000
+    throttled && failure.error.retryAfter !== undefined
+      ? failure.at + failure.error.retryAfter * 1000
       : null
   const secondsLeft = useCountdown(blockedUntil)
 
   const ready = pdf?.status === "ready"
-  const pending = turn.status === "pending" || create.isPending
+  const streaming = !!streamDraft
+  const pending = streaming || turn.status === "pending" || create.isPending
   const notice = !pdf
     ? null
     : pdf.status === "failed"
@@ -85,17 +119,36 @@ export function ChatPanel({
           ? `Rate limited — try again in ${secondsLeft} s`
           : null
 
-  // ⌘/Ctrl+K focuses the composer from anywhere in the workspace (04 §4.3).
+  const stop = () => streamDraft?.controller.abort()
+
+  // ⌘/Ctrl+K focuses the composer; Esc stops a stream (04 §4.3).
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault()
         composer.current?.focus()
       }
+      if (event.key === "Escape" && streaming) {
+        event.preventDefault()
+        stop()
+      }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [])
+  })
+
+  // Screen readers hear when an answer starts and ends, never the tokens.
+  const wasStreaming = useRef(false)
+  useEffect(() => {
+    if (streaming === wasStreaming.current) return
+    wasStreaming.current = streaming
+    if (status.current) {
+      status.current.textContent = streaming
+        ? "Answer started"
+        : "Answer complete"
+    }
+    if (!streaming) composer.current?.focus()
+  }, [streaming])
 
   const submit = async (content: string, replaceId?: string) => {
     if (!pdf) return
@@ -105,17 +158,20 @@ export function ChatPanel({
       id = created.id
       onSelectConversation(id)
     }
+    clearFailure(id)
     const human = optimisticHuman(id, content, cache.nextSeq(id))
     cache.update(id, (messages) => [
       ...messages.filter((m) => m.id !== replaceId),
       human,
     ])
-    send.mutate({
+    const vars = {
       conversationId: id,
       pdfId: pdf.id,
       content,
       optimisticId: human.id,
-    })
+    }
+    if (streamAnswers) void streamAnswer(vars)
+    else send.mutate(vars)
   }
 
   const onSend = () => {
@@ -128,7 +184,8 @@ export function ChatPanel({
 
   const messages = detail.data?.messages ?? []
   const loadingMessages = !!conversationId && detail.isPending
-  const showEmpty = !loadingMessages && messages.length === 0 && !pending
+  const showEmpty =
+    !loadingMessages && messages.length === 0 && !pending && !failure
 
   return (
     <section aria-label="Chat" className="flex h-full min-h-0 flex-col">
@@ -146,6 +203,7 @@ export function ChatPanel({
         }}
         onDeleted={() => onSelectConversation(undefined)}
       />
+      <div ref={status} role="status" aria-live="polite" className="sr-only" />
 
       {loadingMessages || (conversationsLoading && !conversation) ? (
         <div className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-6 py-6">
@@ -167,20 +225,18 @@ export function ChatPanel({
           messages={messages}
           busy={pending}
           tail={
-            pending ? (
+            streamDraft ? (
+              <StreamingAnswer
+                content={streamDraft.content}
+                sources={streamDraft.sources}
+              />
+            ) : pending ? (
               <PendingAnswer />
-            ) : turn.status === "error" && turn.error && turn.variables ? (
+            ) : failure ? (
               <MessageError
-                error={turn.error}
+                error={failure.error}
                 secondsLeft={secondsLeft}
-                onRetry={() => {
-                  if (turn.variables) {
-                    void submit(
-                      turn.variables.content,
-                      turn.variables.optimisticId
-                    )
-                  }
-                }}
+                onRetry={() => void submit(failure.content, failure.replaceId)}
               />
             ) : null
           }
@@ -192,11 +248,20 @@ export function ChatPanel({
         value={draft}
         onChange={setDraft}
         onSend={onSend}
-        disabled={!ready || pending || secondsLeft > 0}
+        onStop={stop}
+        streaming={streaming}
+        disabled={!ready || (pending && !streaming) || secondsLeft > 0}
         notice={notice}
       />
     </section>
   )
+}
+
+interface Failure {
+  error: ApiError
+  content: string
+  replaceId: string
+  at: number
 }
 
 function ChatHeader({
@@ -260,6 +325,7 @@ function ChatHeader({
           </h2>
         )}
       </div>
+      <StreamToggle />
       <DocumentButton onClick={controls.showDocument} />
       {conversation && (
         <DropdownMenu>
@@ -304,5 +370,21 @@ function ChatHeader({
         }}
       />
     </div>
+  )
+}
+
+function StreamToggle() {
+  const streamAnswers = usePreferences((s) => s.streamAnswers)
+  const setStreamAnswers = usePreferences((s) => s.setStreamAnswers)
+  return (
+    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+      <Switch
+        size="sm"
+        checked={streamAnswers}
+        onCheckedChange={setStreamAnswers}
+        aria-label="Stream answers"
+      />
+      <span className="max-sm:sr-only">Stream</span>
+    </label>
   )
 }

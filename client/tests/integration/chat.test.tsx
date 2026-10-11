@@ -14,6 +14,7 @@ import {
 } from "@/mocks/db"
 import { problem } from "@/mocks/http"
 import { routes } from "@/routes"
+import { usePreferences } from "@/stores/preferences"
 
 import { server } from "../msw/server"
 import { renderRoutes } from "../utils"
@@ -34,6 +35,8 @@ const revenuePath = `/documents/${SEED_PDF_IDS.report}?c=${SEED_CONVERSATION_IDS
 
 describe("chat", () => {
   beforeEach(async () => {
+    // F3 covers the plain endpoint; streaming has its own suite.
+    usePreferences.setState({ streamAnswers: false })
     await authApi.signin(DEMO_USER)
   })
 

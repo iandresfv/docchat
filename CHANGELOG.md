@@ -12,6 +12,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - PDF library with grid and table views, upload dialog with drag and drop and progress, live ingestion status (polling every 3 s while processing, screen-reader announcement when ready) and delete with confirmation.
 - Document workspace: resizable three-pane layout (conversations, chat, PDF viewer) that collapses to sheets on tablets and tabs on phones; conversation list with component-arm badges, inline rename, delete, pinned combinations and `[`/`]` navigation; native PDF viewer with page navigation and silent download-link refresh.
 - Chat panel: document-style answers with Markdown, source chips (snippet and similarity on hover, click opens the page), inline `[p.N]` citations, optimistic messages, inline errors with Retry and rate-limit countdown, auto-growing composer, suggested prompts, Markdown export and token/cost meta line.
+- Streaming answers over Server-Sent Events (fetch + `eventsource-parser`): sources render before text, a blinking caret while generating, Stop button and `Esc` to cancel with the partial answer kept, start/complete announcements for screen readers, and a persisted Stream toggle.
 ### Infrastructure
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 
