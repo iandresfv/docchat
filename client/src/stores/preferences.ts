@@ -8,8 +8,10 @@ export type LibraryView = "grid" | "table"
 interface PreferencesState {
   theme: Theme
   libraryView: LibraryView
+  viewerCollapsed: boolean
   setTheme: (theme: Theme) => void
   setLibraryView: (view: LibraryView) => void
+  setViewerCollapsed: (collapsed: boolean) => void
 }
 
 /** Per-device UI preferences persisted in localStorage. */
@@ -18,8 +20,10 @@ export const usePreferences = create<PreferencesState>()(
     (set) => ({
       theme: "system",
       libraryView: "grid",
+      viewerCollapsed: false,
       setTheme: (theme) => set({ theme }),
       setLibraryView: (libraryView) => set({ libraryView }),
+      setViewerCollapsed: (viewerCollapsed) => set({ viewerCollapsed }),
     }),
     {
       name: "docchat.preferences",

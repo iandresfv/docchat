@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest"
 
 import { cleanup } from "@testing-library/react"
+import type { ReactNode } from "react"
 import { afterAll, afterEach, beforeAll, vi } from "vitest"
 
 import { installAuthBridge } from "@/features/auth/session"
@@ -11,6 +12,21 @@ import { server } from "./msw/server"
 
 const initialSession = useSession.getState()
 installAuthBridge()
+
+// jsdom has no layout, so every zero-sized rect "hits" a resize handle and
+// react-resizable-panels swallows pointer events. Panels are plain divs here.
+vi.mock("react-resizable-panels", async () => {
+  const { createElement } = await import("react")
+  const passthrough =
+    (slot: string) =>
+    ({ children, className }: { children?: ReactNode; className?: string }) =>
+      createElement("div", { "data-slot": slot, className }, children)
+  return {
+    Group: passthrough("group"),
+    Panel: passthrough("panel"),
+    Separator: passthrough("separator"),
+  }
+})
 
 // jsdom gaps used by the UI (media queries, observers, scrolling).
 Object.defineProperty(window, "matchMedia", {

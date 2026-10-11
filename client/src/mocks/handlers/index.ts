@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw"
 
 import { authHandlers } from "./auth"
+import { conversationHandlers } from "./conversations"
 import { pdfHandlers } from "./pdfs"
 
 const healthHandlers = [
@@ -18,4 +19,9 @@ const healthHandlers = [
   ),
 ]
 
-export const handlers = [...healthHandlers, ...authHandlers, ...pdfHandlers]
+export const handlers = [
+  ...healthHandlers,
+  ...authHandlers,
+  ...pdfHandlers,
+  ...conversationHandlers,
+]

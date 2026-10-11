@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { cn } from "@/lib/utils"
 import { useBreadcrumbStore } from "@/stores/breadcrumbs"
 
 export function AppBreadcrumbs() {
@@ -22,7 +23,9 @@ export function AppBreadcrumbs() {
           const last = index === items.length - 1
           return (
             <Fragment key={`${item.label}-${index}`}>
-              <BreadcrumbItem className="min-w-0">
+              <BreadcrumbItem
+                className={cn("min-w-0", !last && "max-md:hidden")}
+              >
                 {last || !item.to ? (
                   <BreadcrumbPage className="truncate">
                     {item.label}
@@ -36,7 +39,7 @@ export function AppBreadcrumbs() {
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-              {!last && <BreadcrumbSeparator />}
+              {!last && <BreadcrumbSeparator className="max-md:hidden" />}
             </Fragment>
           )
         })}

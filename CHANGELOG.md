@@ -10,6 +10,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Sign in and sign up with zod-validated forms, an in-memory access token, single-flight silent refresh on 401 (serialised across tabs), session bootstrap on reload and route guards.
 - Mock API mode (`pnpm dev:mock`): the whole backend contract served from MSW in the browser, shared with the test suite.
 - PDF library with grid and table views, upload dialog with drag and drop and progress, live ingestion status (polling every 3 s while processing, screen-reader announcement when ready) and delete with confirmation.
+- Document workspace: resizable three-pane layout (conversations, chat, PDF viewer) that collapses to sheets on tablets and tabs on phones; conversation list with component-arm badges, inline rename, delete, pinned combinations and `[`/`]` navigation; native PDF viewer with page navigation and silent download-link refresh.
 ### Infrastructure
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 

@@ -62,6 +62,15 @@ export const routes: RouteObject[] = [
             }),
           },
           {
+            path: "documents/:pdfId",
+            errorElement: <RouteError />,
+            lazy: async () => ({
+              Component: (
+                await import("@/features/workspace/components/workspace-page")
+              ).WorkspacePage,
+            }),
+          },
+          {
             path: "experiments",
             errorElement: <RouteError />,
             lazy: async () => ({

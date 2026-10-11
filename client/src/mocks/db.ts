@@ -3,7 +3,9 @@
  * reload behaves like a real backend. Used by the dev mock mode
  * (`VITE_API_MOCKS=true`) and by the test suite.
  */
-import type { Pdf, PdfStatus, User } from "@/api/types"
+import type { Conversation, Message, Pdf, PdfStatus, User } from "@/api/types"
+
+import { seedMessages } from "./seed-messages"
 
 export interface MockUser extends User {
   password: string
@@ -18,9 +20,18 @@ export interface MockPdf extends Omit<Pdf, "status" | "conversation_count"> {
   frozen_status?: PdfStatus
 }
 
+export interface MockConversation extends Omit<
+  Conversation,
+  "message_count" | "last_message_at"
+> {
+  user_id: string
+}
+
 export interface MockDb {
   users: MockUser[]
   pdfs: MockPdf[]
+  conversations: MockConversation[]
+  messages: Message[]
 }
 
 const STORAGE_KEY = "docchat.mock.db"
@@ -67,8 +78,43 @@ export const SEED_PDF_IDS = {
   scanned: "3f6b1c2e-8d4a-4f61-9b0e-5a7c2d9e1f04",
 } as const
 
+export const SEED_CONVERSATION_IDS = {
+  revenue: "c0000000-0000-4000-8000-000000000001",
+  risks: "c0000000-0000-4000-8000-000000000002",
+} as const
+
 function seed(): MockDb {
+  const t0 = Date.now() - 26 * 3_600_000
   return {
+    conversations: [
+      {
+        id: SEED_CONVERSATION_IDS.revenue,
+        pdf_id: SEED_PDF_IDS.report,
+        user_id: DEMO_USER_ID,
+        title: "Revenue growth",
+        components: {
+          llm: "haiku-5-5",
+          retriever: "mmr_k4",
+          memory: "window_6",
+        },
+        pinned: false,
+        created_at: new Date(t0).toISOString(),
+      },
+      {
+        id: SEED_CONVERSATION_IDS.risks,
+        pdf_id: SEED_PDF_IDS.report,
+        user_id: DEMO_USER_ID,
+        title: "Conversation 2",
+        components: { llm: "haiku-4-5", retriever: "sim_k4", memory: "buffer" },
+        pinned: true,
+        created_at: new Date(t0 + 3_600_000).toISOString(),
+      },
+    ],
+    messages: seedMessages(
+      SEED_CONVERSATION_IDS.revenue,
+      SEED_CONVERSATION_IDS.risks,
+      t0
+    ),
     pdfs: [
       seedPdf(
         SEED_PDF_IDS.report,
