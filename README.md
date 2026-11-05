@@ -53,7 +53,7 @@ retrieval-augmented generation setup performs best.
 ## Contents
 
 - [Tech stack](#tech-stack)
-- [Architecture](#architecture)
+- [Architecture](#architecture) · [Decision records](docs/adr/)
 - [Getting started](#getting-started)
 - [API](#api)
 - [Testing](#testing)
@@ -145,6 +145,17 @@ ports; `rag/` holds the LangGraph pipeline and depends on neither HTTP nor SQL.
 The vector store, object storage, task queue and PDF extractor sit behind
 ports, so CI and the demo run fully offline on pgvector while Pinecone remains
 a configuration switch.
+
+### Why it is built this way
+
+Every significant choice — the framework, the queue, the four ports, the vector store, the
+auth scheme, the evaluation tiers — is recorded in [`docs/adr/`](docs/adr/) with the options
+that were weighed, what the decision costs, and how to reverse it.
+
+Worth starting with: [queueing ingestion but not
+generation](docs/adr/0002-celery-for-ingestion-only.md), [which boundaries deserve a port and
+which do not](docs/adr/0003-four-ports.md), and [a state graph instead of an
+agent](docs/adr/0005-langgraph-state-graph-no-agent.md).
 
 ---
 

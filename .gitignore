@@ -1,5 +1,7 @@
 # Working docs (never committed; see 01-ARCHITECTURE §3)
-docs/
+docs/*
+!docs/adr/
+CLAUDE.md
 
 # OS / editors
 .DS_Store
