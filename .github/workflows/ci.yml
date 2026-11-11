@@ -2,6 +2,8 @@ name: ci
 
 on:
   pull_request:
+    # labeled/unlabeled re-run the changelog check when skip-changelog is added or removed.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
 
@@ -18,17 +20,57 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
+      api: ${{ steps.filter.outputs.api }}
       client: ${{ steps.filter.outputs.client }}
+      changelog: ${{ steps.filter.outputs.changelog }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
+            api:
+              - 'api/**'
+              - '.github/workflows/ci.yml'
             client:
               - 'client/**'
               - 'api/docs/openapi.json'
               - '.github/workflows/ci.yml'
+            changelog:
+              - 'CHANGELOG.md'
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          working-directory: api
+      - run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Type-check
+        run: uv run mypy
+      - name: Tests
+        run: uv run pytest
+
+  changelog:
+    needs: changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: CHANGELOG.md has a new bullet, or the PR is labelled skip-changelog
+        if: >-
+          needs.changes.outputs.changelog != 'true' &&
+          !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+        run: |
+          echo "::error::Add a bullet under [Unreleased] in CHANGELOG.md, or label the PR skip-changelog."
+          exit 1
 
   client:
     needs: changes
