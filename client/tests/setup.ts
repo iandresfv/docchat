@@ -18,8 +18,9 @@ const initialStream = useStreamStore.getState()
 installAuthBridge()
 
 // Integration tests render whole routes; give async queries room under
-// parallel load (the default is 1 s).
-configure({ asyncUtilTimeout: 3_000 })
+// parallel load (the default is 1 s), and more on CI runners, which are
+// about twice as slow as a laptop.
+configure({ asyncUtilTimeout: process.env.CI ? 10_000 : 3_000 })
 
 // jsdom has no layout, so every zero-sized rect "hits" a resize handle and
 // react-resizable-panels swallows pointer events. Panels are plain divs here.
