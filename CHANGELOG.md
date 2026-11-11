@@ -2,6 +2,8 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.1.0] - 2026-11-11
 ### Added
 - Repository layout, MIT license, README with the stage map, and a pull request template.
 - Client scaffold: Vite 8, React 19 with the React Compiler, TypeScript 6, Tailwind 4 and shadcn/ui (Base UI, `nova`) themed with the DocChat design tokens.
@@ -28,4 +30,5 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 - CI job for the API (lint, format check, strict type-check and tests against the locked dependencies), and a check that fails any pull request that neither adds a CHANGELOG bullet nor carries the `skip-changelog` label.
 
-[Unreleased]: https://github.com/iandresfv/docchat/commits/main
+[Unreleased]: https://github.com/iandresfv/docchat/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/iandresfv/docchat/releases/tag/v0.1.0
