@@ -1,9 +1,10 @@
-from importlib.metadata import version
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from docchat import __version__
+from docchat.api.routes import health
 from docchat.core.body_limit import BodySizeLimitMiddleware
+from docchat.core.errors import register_error_handlers
 from docchat.core.logging import configure_logging
 from docchat.core.request_id import REQUEST_ID_HEADER, RequestIdMiddleware
 from docchat.core.settings import Settings, get_settings
@@ -16,7 +17,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings if settings is not None else get_settings()
     configure_logging(settings)
 
-    app = FastAPI(title="DocChat API", version=version("docchat"))
+    app = FastAPI(title="DocChat API", version=__version__)
+    # Dependency checks for /ready, by name. Later stages add postgres, redis, storage, vectors.
+    app.state.readiness_checks = {}
+    app.include_router(health.router)
+    register_error_handlers(app)
 
     # The last middleware added runs first: request id → CORS → body limit → routes.
     app.add_middleware(

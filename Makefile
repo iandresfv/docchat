@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help tools install run lint fmt type test check
+.PHONY: help tools install run lint fmt type test check openapi
 
 API := uv run --directory api
 
@@ -35,3 +35,6 @@ test: ## Test the API
 
 check: lint type test ## Lint, type-check and test everything (the gate)
 	pnpm --dir client check
+
+openapi: ## Export api/docs/openapi.json, the contract the client's types come from
+	$(API) python scripts/export_openapi.py

@@ -1,7 +1,8 @@
 from starlette.datastructures import Headers
 from starlette.exceptions import HTTPException
-from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from docchat.core.errors import problem_response
 
 TOO_LARGE = "Request body too large"
 
@@ -24,7 +25,7 @@ class BodySizeLimitMiddleware:
 
         declared = Headers(scope=scope).get("content-length", "")
         if declared.isdigit() and int(declared) > self.max_bytes:
-            response = JSONResponse({"detail": TOO_LARGE}, status_code=413)
+            response = problem_response(413, "payload-too-large", TOO_LARGE, instance=scope["path"])
             await response(scope, receive, send)
             return
 
