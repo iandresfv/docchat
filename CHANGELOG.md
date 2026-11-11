@@ -18,6 +18,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Settings page: theme, default streaming and usage-line preferences, today/month usage against the daily token budget, sign out and sign out everywhere, and a keyboard-shortcut reference (also on `?` anywhere).
 - Architecture decision records for the 18 design choices behind the system, and a contributor guide with the repository's conventions and invariants.
 - FastAPI application skeleton managed with uv, with ruff, strict mypy and pytest configured, and a root `Makefile` whose `make check` is the quality gate for both applications.
+- API configuration validated at startup from the environment variables listed in `api/.env.example`; every response carries an `X-Request-ID` that also tags its log lines (readable text locally, JSON in the cluster); CORS for the configured origins; request bodies over the upload limit are rejected with 413.
 ### Fixed
 - Sending a message scrolls the conversation back to the latest turn even after scrolling up or opening a citation.
 ### Infrastructure
