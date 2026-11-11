@@ -10,6 +10,8 @@ export default defineConfig((env) =>
       setupFiles: ["./tests/setup.ts"],
       include: ["tests/{unit,integration}/**/*.test.{ts,tsx}"],
       css: false,
+      // Leaves room for the longer async-query timeout set on CI in setup.ts.
+      testTimeout: process.env.CI ? 20_000 : 5_000,
       restoreMocks: true,
       coverage: {
         provider: "v8",
