@@ -59,6 +59,23 @@ docs/adr/       architecture decision records
 - **Pull requests** — the description states which roadmap item it implements and which ADR
   governs it. The template has the fields.
 
+## Pull requests and `main`
+
+`main` changes only through pull requests, and each one lands as a single commit:
+
+1. Branch from an up-to-date `main`, named after the change (`feat/problem-json-health`).
+2. Open the pull request with a Conventional Commit title; it becomes the commit subject.
+3. CI must pass. The required checks are `ci / api`, `ci / client` and `ci / changelog`. The
+   first two run only when their paths change, and a skipped job counts as passed.
+4. Squash-merge and delete the branch, so `main` keeps one commit per pull request.
+
+Branch protection on `main` enforces this: a pull request is required, the three checks above
+are required, history must be linear, and force-pushes and deletion are blocked.
+
+Releases follow ADR-0017: a `chore(release): prepare vX.Y.Z` pull request renames
+`[Unreleased]` to a dated section and bumps the version in `api/pyproject.toml` and
+`client/package.json`; once it merges, an annotated `vX.Y.Z` tag is pushed from `main`.
+
 ## Commands
 
 | Command | What it does |
@@ -67,6 +84,7 @@ docs/adr/       architecture decision records
 | `make check` | Lint, type-check and test everything (**the gate**) |
 | `make install` | Install dependencies for both applications |
 | `make run` | Run the API locally with reload |
+| `make openapi` | Export `api/docs/openapi.json`, the contract the client's types are generated from |
 | `make tilt-up` | Bring the full stack up on minikube |
 | `make eval-retrieval` | Score the retriever arms against the golden set |
 

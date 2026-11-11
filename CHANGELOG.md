@@ -26,5 +26,6 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Client container image: Node build stage → unprivileged nginx (non-root, SPA fallback, immutable asset caching, security headers) proxying `/api` with buffering off for SSE.
 - Playwright end-to-end suite (sign in, upload, streaming chat with stop and rating) plus axe accessibility checks on every main screen; nightly `e2e` workflow.
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
+- CI job for the API (lint, format check, strict type-check and tests against the locked dependencies), and a check that fails any pull request that neither adds a CHANGELOG bullet nor carries the `skip-changelog` label.
 
 [Unreleased]: https://github.com/iandresfv/docchat/commits/main
