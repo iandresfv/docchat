@@ -17,6 +17,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Experiments dashboard: diverging mean-rating bars per LLM, retriever and memory arm (low samples dimmed), sortable combinations table, include-pinned toggle, components glossary and "start pinned conversation" from any combination.
 - Settings page: theme, default streaming and usage-line preferences, today/month usage against the daily token budget, sign out and sign out everywhere, and a keyboard-shortcut reference (also on `?` anywhere).
 - Architecture decision records for the 18 design choices behind the system, and a contributor guide with the repository's conventions and invariants.
+- FastAPI application skeleton managed with uv, with ruff, strict mypy and pytest configured, and a root `Makefile` whose `make check` is the quality gate for both applications.
 ### Fixed
 - Sending a message scrolls the conversation back to the latest turn even after scrolling up or opening a citation.
 ### Infrastructure
