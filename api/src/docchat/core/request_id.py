@@ -23,7 +23,8 @@ class RequestIdMiddleware:
     """Tags each request with an id, echoes it in `X-Request-ID` and writes one access line.
 
     The id is bound to structlog's context, so every log line written while the request is
-    handled carries it. Written as plain ASGI so it never buffers streamed responses.
+    handled carries it. Written as plain ASGI, which avoids the extra task and in-memory
+    channel that `BaseHTTPMiddleware` adds to every request.
     """
 
     def __init__(self, app: ASGIApp) -> None:
