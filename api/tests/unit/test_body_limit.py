@@ -37,6 +37,8 @@ async def test_rejects_a_declared_length_over_the_limit(client: httpx.AsyncClien
     response = await client.post("/echo", content=b"x" * (LIMIT + 1))
 
     assert response.status_code == 413
+    assert response.headers["content-type"] == "application/problem+json"
+    assert response.json()["type"].endswith("/payload-too-large")
 
 
 async def test_stops_reading_a_chunked_body_over_the_limit(client: httpx.AsyncClient) -> None:
@@ -48,3 +50,4 @@ async def test_stops_reading_a_chunked_body_over_the_limit(client: httpx.AsyncCl
 
     assert "content-length" not in response.request.headers
     assert response.status_code == 413
+    assert response.json()["type"].endswith("/payload-too-large")
