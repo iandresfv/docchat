@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help tools install run lint fmt type test check openapi
+.PHONY: help tools install run lint fmt type test test-external check openapi
 
 API := uv run --directory api
 
@@ -32,6 +32,9 @@ type: ## Type-check the API
 
 test: ## Test the API
 	$(API) pytest
+
+test-external: ## Test the API against the real services, with the keys in api/.env
+	$(API) --env-file .env pytest -m external
 
 check: lint type test ## Lint, type-check and test everything (the gate)
 	pnpm --dir client check
