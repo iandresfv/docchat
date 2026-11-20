@@ -11,6 +11,7 @@ import { useSession } from "@/stores/session"
 import { useStreamStore } from "@/stores/stream"
 
 import { server } from "./msw/server"
+import { settleQueries } from "./utils"
 
 const initialSession = useSession.getState()
 const initialPreferences = usePreferences.getState()
@@ -60,7 +61,8 @@ Element.prototype.scrollIntoView = vi.fn()
 Element.prototype.scrollTo = vi.fn()
 
 beforeAll(() => server.listen({ onUnhandledFrame: "error" }))
-afterEach(() => {
+afterEach(async () => {
+  await settleQueries()
   server.resetHandlers()
   cleanup()
   localStorage.clear()
