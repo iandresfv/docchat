@@ -2,6 +2,8 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- PDF text extraction page by page, rejecting files that are not PDFs, are password-protected, have no text layer (scans) or exceed `MAX_PDF_PAGES`; the text is split into overlapping chunks of `CHUNK_SIZE` characters that never cross a page, so every chunk keeps the page number an answer will cite.
 
 ## [0.1.0] - 2026-11-11
 ### Added
