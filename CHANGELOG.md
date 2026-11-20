@@ -2,6 +2,8 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-11-20
 ### Added
 - PDF text extraction page by page, rejecting files that are not PDFs, are password-protected, have no text layer (scans) or exceed `MAX_PDF_PAGES`; the text is split into overlapping chunks of `CHUNK_SIZE` characters that never cross a page, so every chunk keeps the page number an answer will cite.
 - Retrieval building blocks: a vector index interface with an in-memory implementation, and Maximal Marginal Relevance (MMR) re-ranking, which trades a little relevance for passages that repeat each other less.
@@ -37,5 +39,6 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 - CI job for the API (lint, format check, strict type-check and tests against the locked dependencies), and a check that fails any pull request that neither adds a CHANGELOG bullet nor carries the `skip-changelog` label.
 
-[Unreleased]: https://github.com/iandresfv/docchat/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/iandresfv/docchat/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/iandresfv/docchat/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/iandresfv/docchat/releases/tag/v0.1.0
