@@ -20,6 +20,9 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:5173"]
     )
     max_upload_bytes: int = Field(default=20 * 1024 * 1024, gt=0)
+    max_pdf_pages: int = Field(default=200, gt=0)
+    chunk_size: int = Field(default=1200, gt=0)
+    chunk_overlap: int = Field(default=200, ge=0)
 
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
@@ -32,6 +35,12 @@ class Settings(BaseSettings):
     def forbid_wildcard_cors_in_production(self) -> Self:
         if self.app_env == "production" and "*" in self.cors_allowed_origins:
             raise ValueError("CORS_ALLOWED_ORIGINS cannot contain '*' in production")
+        return self
+
+    @model_validator(mode="after")
+    def overlap_smaller_than_chunk(self) -> Self:
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
         return self
 
 

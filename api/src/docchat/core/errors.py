@@ -67,6 +67,18 @@ class UnsupportedMediaType(AppError):
     status, slug = 415, "unsupported-media-type"
 
 
+class PdfTooLarge(AppError):
+    """The PDF has more pages than `MAX_PDF_PAGES`."""
+
+    status, slug = 422, "validation-error"
+
+
+class PdfUnreadable(AppError):
+    """Not a PDF, password-protected, or without a text layer (a scan). Retrying will not help."""
+
+    status, slug = 422, "validation-error"
+
+
 class RateLimited(AppError):
     status, slug = 429, "rate-limited"
 

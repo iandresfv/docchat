@@ -11,6 +11,7 @@ def test_defaults_suit_local_development() -> None:
     assert settings.log_format == "text"
     assert settings.cors_allowed_origins == ["http://localhost:5173"]
     assert settings.max_upload_bytes == 20 * 1024 * 1024
+    assert (settings.chunk_size, settings.chunk_overlap) == (1200, 200)
 
 
 def test_reads_comma_separated_origins_from_the_environment(
@@ -35,4 +36,12 @@ def test_production_forbids_wildcard_cors(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "*")
 
     with pytest.raises(ValidationError, match="cannot contain"):
+        Settings(_env_file=None)
+
+
+def test_chunk_overlap_must_be_smaller_than_the_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CHUNK_SIZE", "200")
+    monkeypatch.setenv("CHUNK_OVERLAP", "200")
+
+    with pytest.raises(ValidationError, match="CHUNK_OVERLAP must be smaller"):
         Settings(_env_file=None)
