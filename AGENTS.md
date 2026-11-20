@@ -82,6 +82,7 @@ Releases follow ADR-0017: a `chore(release): prepare vX.Y.Z` pull request rename
 |---|---|
 | `make help` | List every target |
 | `make check` | Lint, type-check and test everything (**the gate**) |
+| `make test-external` | Run the tests marked `external` against the real services, with the keys in `api/.env`; `make check` skips them |
 | `make install` | Install dependencies for both applications |
 | `make run` | Run the API locally with reload |
 | `make openapi` | Export `api/docs/openapi.json`, the contract the client's types are generated from |
