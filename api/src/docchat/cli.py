@@ -1,4 +1,4 @@
-"""`docchat` on the command line: ingestion without the HTTP API.
+"""`docchat` on the command line: ingestion and questions without the HTTP API.
 
 The CLI is a composition root, like `main.py` for the API: it reads the settings, builds the
 adapters and hands them to a service. Anything worth testing lives in the service.
@@ -19,6 +19,8 @@ from docchat.core.errors import AppError
 from docchat.core.logging import configure_logging
 from docchat.core.settings import MissingSetting, Settings, get_settings, require_secret
 from docchat.ports.vector_index import VectorIndex
+from docchat.rag.answer import answer_question
+from docchat.rag.components.llms import build_chat_model
 from docchat.rag.components.registry import build_embeddings
 from docchat.services.ingestion_service import IngestionService
 
@@ -75,3 +77,27 @@ def ingest(
     typer.echo(
         f"pdf_id  {result.pdf_id}\npages   {result.page_count}\nchunks  {result.chunk_count}"
     )
+
+
+@app.command()
+def ask(
+    pdf_id: Annotated[UUID, typer.Argument(help="The id `docchat ingest` printed.")],
+    question: Annotated[str, typer.Argument(help="The question, in quotes.")],
+    k: Annotated[int, typer.Option(min=1, max=20, help="How many chunks to answer from.")] = 4,
+) -> None:
+    """Answer a question about an ingested PDF from its most similar chunks."""
+    settings = get_settings()
+    with errors_as_messages():
+        answer = answer_question(
+            question,
+            pdf_id=pdf_id,
+            embeddings=build_embeddings(settings),
+            index=build_vector_index(settings),
+            llm=build_chat_model(settings),
+            k=k,
+        )
+    typer.echo(f"{answer.text}\n\nSources:")
+    for source in answer.sources:
+        preview = " ".join(source.chunk.text.split())
+        preview = preview if len(preview) <= 72 else preview[:71] + "…"
+        typer.echo(f"  p.{source.chunk.page}  {source.score:.2f}  {preview}")

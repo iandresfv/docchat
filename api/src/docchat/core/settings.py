@@ -27,6 +27,8 @@ class Settings(BaseSettings):
 
     # Keys are optional so the API starts without them; whatever needs one asks for it with
     # `require_secret`, which names the missing variable.
+    anthropic_api_key: SecretStr | None = None
+    llm_max_output_tokens: int = Field(default=1024, gt=0)
     voyage_api_key: SecretStr | None = None
     embedding_model: str = "voyage-4-lite"
     # Must match the vector index's dimension.

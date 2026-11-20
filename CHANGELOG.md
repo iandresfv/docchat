@@ -8,6 +8,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Pinecone as a vector store: chunks are written in batches of 100 with their PDF, page and text as metadata, and every search and delete is filtered to a single PDF.
 - Uploaded PDFs can be kept on the local filesystem behind the same storage interface the cluster's object store will use, with keys confined to the storage directory.
 - `docchat ingest <file.pdf>`: stores a PDF, embeds its chunks with Voyage AI (`voyage-4-lite`, 1024 dimensions) and indexes them in Pinecone, waiting until every chunk is searchable; running it again with `--pdf-id` replaces the previous version.
+- `docchat ask <pdf_id> "<question>"`: answers from the PDF's most similar chunks with Claude Haiku 5.5, citing pages inline as `[p.N]`, and lists the sources with their similarity.
 
 ## [0.1.0] - 2026-11-11
 ### Added
