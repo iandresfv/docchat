@@ -1,7 +1,8 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -24,6 +25,16 @@ class Settings(BaseSettings):
     chunk_size: int = Field(default=1200, gt=0)
     chunk_overlap: int = Field(default=200, ge=0)
 
+    # Keys are optional so the API starts without them; whatever needs one asks for it with
+    # `require_secret`, which names the missing variable.
+    voyage_api_key: SecretStr | None = None
+    embedding_model: str = "voyage-4-lite"
+    # Must match the vector index's dimension.
+    embedding_dimensions: Literal[256, 512, 1024, 2048] = 1024
+    pinecone_api_key: SecretStr | None = None
+    pinecone_index_name: str = "docchat"
+    fs_storage_dir: Path = Path("var/storage")
+
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
     def split_comma_separated(cls, value: object) -> object:
@@ -42,6 +53,16 @@ class Settings(BaseSettings):
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
         return self
+
+
+class MissingSetting(RuntimeError):
+    """A variable that this command needs is not set."""
+
+
+def require_secret(value: SecretStr | None, env_var: str) -> str:
+    if value is None or not value.get_secret_value():
+        raise MissingSetting(f"{env_var} is not set; add it to api/.env")
+    return value.get_secret_value()
 
 
 @lru_cache

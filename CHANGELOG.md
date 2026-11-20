@@ -7,6 +7,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Retrieval building blocks: a vector index interface with an in-memory implementation, and Maximal Marginal Relevance (MMR) re-ranking, which trades a little relevance for passages that repeat each other less.
 - Pinecone as a vector store: chunks are written in batches of 100 with their PDF, page and text as metadata, and every search and delete is filtered to a single PDF.
 - Uploaded PDFs can be kept on the local filesystem behind the same storage interface the cluster's object store will use, with keys confined to the storage directory.
+- `docchat ingest <file.pdf>`: stores a PDF, embeds its chunks with Voyage AI (`voyage-4-lite`, 1024 dimensions) and indexes them in Pinecone, waiting until every chunk is searchable; running it again with `--pdf-id` replaces the previous version.
 
 ## [0.1.0] - 2026-11-11
 ### Added
