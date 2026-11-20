@@ -6,6 +6,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - PDF text extraction page by page, rejecting files that are not PDFs, are password-protected, have no text layer (scans) or exceed `MAX_PDF_PAGES`; the text is split into overlapping chunks of `CHUNK_SIZE` characters that never cross a page, so every chunk keeps the page number an answer will cite.
 - Retrieval building blocks: a vector index interface with an in-memory implementation, and Maximal Marginal Relevance (MMR) re-ranking, which trades a little relevance for passages that repeat each other less.
 - Pinecone as a vector store: chunks are written in batches of 100 with their PDF, page and text as metadata, and every search and delete is filtered to a single PDF.
+- Uploaded PDFs can be kept on the local filesystem behind the same storage interface the cluster's object store will use, with keys confined to the storage directory.
 
 ## [0.1.0] - 2026-11-11
 ### Added
