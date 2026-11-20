@@ -43,5 +43,10 @@ def configure_logging(settings: Settings) -> None:
         uvicorn_logger.propagate = True
     # RequestIdMiddleware writes the access line, with the request id and the duration.
     logging.getLogger("uvicorn.access").disabled = True
-    # httpx logs every outgoing request at INFO; SDKs built on it would flood the output.
-    logging.getLogger("httpx").setLevel(logging.WARNING)
+    # These log every outgoing request at INFO and would flood the output: httpx (the Anthropic
+    # SDK), httpx2 (huggingface_hub, which fetches Voyage's tokenizer) and the Pinecone SDK.
+    for name in ("httpx", "httpx2", "pinecone"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    # The Hub's "set a HF_TOKEN" advice concerns its rate limits, not ours: we only download the
+    # Voyage tokenizer, once, and it is cached.
+    logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
