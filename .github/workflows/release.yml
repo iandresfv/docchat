@@ -1,0 +1,47 @@
+name: release
+
+# Once a version tag's images are published: take that version's section of CHANGELOG.md and
+# publish it as the GitHub Release, with the OpenAPI document attached. A tag without a CHANGELOG
+# section fails here. See ADR-0017.
+on:
+  workflow_run:
+    workflows: [images]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    # For a tag push, the triggering run's head_branch is the tag's name.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Take the version's section from CHANGELOG.md
+        run: |
+          heading="## [${TAG#v}]"
+          awk -v heading="$heading" '
+            index($0, heading) == 1 { found = 1; next }
+            found && (/^## \[/ || /^\[[^]]+\]: /) { exit }
+            found { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "::error::CHANGELOG.md has no '$heading' section."
+            exit 1
+          fi
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$TAG" api/docs/openapi.json
+          --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
