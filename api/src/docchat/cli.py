@@ -19,7 +19,12 @@ from docchat.core.settings import MissingSetting, get_settings
 from docchat.rag.answer import answer_question
 from docchat.rag.components.llms import build_chat_model
 from docchat.rag.components.registry import build_embeddings
-from docchat.wiring import build_ingestion_service, build_storage, build_vector_index
+from docchat.wiring import (
+    build_ingestion_service,
+    build_storage,
+    build_task_queue,
+    build_vector_index,
+)
 
 app = typer.Typer(help="DocChat from the terminal.", no_args_is_help=True, add_completion=False)
 
@@ -47,8 +52,11 @@ def ingest(
     pdf_id: Annotated[
         UUID | None, typer.Option(help="Re-ingest under this id instead of a new one.")
     ] = None,
+    inline: Annotated[
+        bool, typer.Option(help="Index it here and wait, without the queue and the worker.")
+    ] = False,
 ) -> None:
-    """Store a PDF, then extract, chunk, embed and index it."""
+    """Store a PDF and queue it for the worker to extract, chunk, embed and index."""
     settings = get_settings()
     pdf_id = pdf_id or uuid4()
     key = f"pdfs/cli/{pdf_id}.pdf"
@@ -57,8 +65,14 @@ def ingest(
             build_storage(settings).put(
                 key, file, content_type="application/pdf", size=path.stat().st_size
             )
-        result = build_ingestion_service(settings).run(pdf_id, key)
-    typer.echo(f"pdf_id  {pdf_id}\npages   {result.page_count}\nchunks  {result.chunk_count}")
+        if inline:
+            result = build_ingestion_service(settings).run(pdf_id, key)
+            typer.echo(
+                f"pdf_id  {pdf_id}\npages   {result.page_count}\nchunks  {result.chunk_count}"
+            )
+            return
+        task_id = build_task_queue(settings).enqueue_ingestion(pdf_id, key)
+    typer.echo(f"pdf_id  {pdf_id}\ntask    {task_id}\nqueued: the worker log shows the progress")
 
 
 @app.command()
