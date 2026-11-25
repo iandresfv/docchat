@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     pinecone_api_key: SecretStr | None = None
     pinecone_index_name: str = "docchat"
     fs_storage_dir: Path = Path("var/storage")
+    celery_broker_url: str = "redis://localhost:6379/1"
 
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod

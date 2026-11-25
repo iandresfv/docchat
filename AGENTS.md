@@ -85,6 +85,7 @@ Releases follow ADR-0017: a `chore(release): prepare vX.Y.Z` pull request rename
 | `make test-external` | Run the tests marked `external` against the real services, with the keys in `api/.env`; `make check` skips them |
 | `make install` | Install dependencies for both applications |
 | `make run` | Run the API locally with reload |
+| `make worker` | Run the ingestion worker locally; it needs Redis at `CELERY_BROKER_URL` |
 | `make openapi` | Export `api/docs/openapi.json`, the contract the client's types are generated from |
 | `make tilt-up` | Bring the full stack up on minikube |
 | `make eval-retrieval` | Score the retriever arms against the golden set |

@@ -11,9 +11,12 @@ from typer.testing import CliRunner
 from docchat import cli
 from docchat.adapters.vector.memory_index import InMemoryIndex
 from docchat.core.settings import Settings
-from docchat.ports.vector_index import Chunk
+from docchat.ports.vector_index import Chunk, VectorIndex
+from docchat.services.ingestion_service import IngestionService
 
 runner = CliRunner()
+
+type OfflineIngestion = Callable[[Settings, VectorIndex], IngestionService]
 
 
 @pytest.fixture
@@ -28,9 +31,11 @@ def test_ingest_prints_the_page_and_chunk_counts(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     make_pdf: Callable[[Sequence[str]], bytes],
+    offline_ingestion: OfflineIngestion,
 ) -> None:
-    monkeypatch.setattr(cli, "build_embeddings", lambda _: DeterministicFakeEmbedding(size=8))
-    monkeypatch.setattr(cli, "build_vector_index", lambda _: InMemoryIndex())
+    monkeypatch.setattr(
+        cli, "build_ingestion_service", lambda s: offline_ingestion(s, InMemoryIndex())
+    )
     pdf = tmp_path / "doc.pdf"
     pdf.write_bytes(make_pdf(["First.", "Second."]))
 

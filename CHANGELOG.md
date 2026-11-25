@@ -2,6 +2,8 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- A Celery worker (`make worker`) that ingests a stored PDF as a background task taken from Redis. Failures that may pass on their own (Voyage or Pinecone busy, rate-limited or unreachable) are retried up to three times with exponential backoff; a PDF that cannot be read fails at once.
 
 ## [0.2.0] - 2026-11-20
 ### Added
