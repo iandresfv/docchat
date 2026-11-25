@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help tools install run lint fmt type test test-external check openapi
+.PHONY: help tools install run worker lint fmt type test test-external check openapi
 
 API := uv run --directory api
 
@@ -18,6 +18,9 @@ install: ## Install dependencies for both applications
 
 run: ## Run the API locally with reload
 	$(API) uvicorn docchat.main:app --reload
+
+worker: ## Run the ingestion worker locally; needs Redis at CELERY_BROKER_URL
+	$(API) celery -A docchat.worker.celery_app worker -Q ingestion --concurrency 2
 
 lint: ## Lint and check formatting of the API
 	$(API) ruff check .

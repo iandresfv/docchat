@@ -3,9 +3,14 @@ from collections.abc import AsyncIterator, Callable, Sequence
 import httpx
 import pytest
 from fastapi import FastAPI
+from langchain_core.embeddings import DeterministicFakeEmbedding
 
+from docchat.adapters.pdf.pypdf_extractor import PypdfExtractor
+from docchat.adapters.storage.fs_storage import FsStorage
 from docchat.core.settings import Settings
 from docchat.main import create_app
+from docchat.ports.vector_index import VectorIndex
+from docchat.services.ingestion_service import IngestionService
 
 
 @pytest.fixture
@@ -29,6 +34,22 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 @pytest.fixture
 def make_pdf() -> Callable[[Sequence[str]], bytes]:
     return build_pdf
+
+
+@pytest.fixture
+def offline_ingestion() -> Callable[[Settings, VectorIndex], IngestionService]:
+    """The real ingestion over `FS_STORAGE_DIR`, with fake embeddings and the given index."""
+
+    def build(settings: Settings, index: VectorIndex) -> IngestionService:
+        return IngestionService(
+            storage=FsStorage(settings.fs_storage_dir),
+            extractor=PypdfExtractor(),
+            embeddings=DeterministicFakeEmbedding(size=8),
+            index=index,
+            settings=settings,
+        )
+
+    return build
 
 
 def build_pdf(pages: Sequence[str]) -> bytes:

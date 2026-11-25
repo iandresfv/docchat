@@ -1,7 +1,8 @@
 """`docchat` on the command line: ingestion and questions without the HTTP API.
 
-The CLI is a composition root, like `main.py` for the API: it reads the settings, builds the
-adapters and hands them to a service. Anything worth testing lives in the service.
+The CLI is a composition root, like `main.py` for the API: it reads the settings, has
+`docchat.wiring` build the adapters and hands them to a service. Anything worth testing lives in
+the service.
 """
 
 from collections.abc import Iterator
@@ -12,26 +13,15 @@ from uuid import UUID, uuid4
 
 import typer
 
-from docchat.adapters.pdf.pypdf_extractor import PypdfExtractor
-from docchat.adapters.storage.fs_storage import FsStorage
-from docchat.adapters.vector.pinecone_index import PineconeIndex
 from docchat.core.errors import AppError
 from docchat.core.logging import configure_logging
-from docchat.core.settings import MissingSetting, Settings, get_settings, require_secret
-from docchat.ports.vector_index import VectorIndex
+from docchat.core.settings import MissingSetting, get_settings
 from docchat.rag.answer import answer_question
 from docchat.rag.components.llms import build_chat_model
 from docchat.rag.components.registry import build_embeddings
-from docchat.services.ingestion_service import IngestionService
+from docchat.wiring import build_ingestion_service, build_storage, build_vector_index
 
 app = typer.Typer(help="DocChat from the terminal.", no_args_is_help=True, add_completion=False)
-
-
-def build_vector_index(settings: Settings) -> VectorIndex:
-    return PineconeIndex.connect(
-        api_key=require_secret(settings.pinecone_api_key, "PINECONE_API_KEY"),
-        index_name=settings.pinecone_index_name,
-    )
 
 
 @contextmanager
@@ -61,22 +51,14 @@ def ingest(
     """Store a PDF, then extract, chunk, embed and index it."""
     settings = get_settings()
     pdf_id = pdf_id or uuid4()
+    key = f"pdfs/cli/{pdf_id}.pdf"
     with errors_as_messages():
-        storage = FsStorage(settings.fs_storage_dir)
-        key = f"pdfs/cli/{pdf_id}.pdf"
         with path.open("rb") as file:
-            storage.put(key, file, content_type="application/pdf", size=path.stat().st_size)
-        service = IngestionService(
-            storage=storage,
-            extractor=PypdfExtractor(),
-            embeddings=build_embeddings(settings),
-            index=build_vector_index(settings),
-            settings=settings,
-        )
-        result = service.run(pdf_id, key)
-    typer.echo(
-        f"pdf_id  {result.pdf_id}\npages   {result.page_count}\nchunks  {result.chunk_count}"
-    )
+            build_storage(settings).put(
+                key, file, content_type="application/pdf", size=path.stat().st_size
+            )
+        result = build_ingestion_service(settings).run(pdf_id, key)
+    typer.echo(f"pdf_id  {pdf_id}\npages   {result.page_count}\nchunks  {result.chunk_count}")
 
 
 @app.command()
