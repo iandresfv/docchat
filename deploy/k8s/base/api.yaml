@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docchat-api
+  labels:
+    app.kubernetes.io/name: docchat-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docchat-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docchat-api
+        app.kubernetes.io/component: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: docchat-api
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "docchat.main:app", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: docchat-api-config
+            # Created outside the manifests (`make secrets-dev`), so no key is ever committed.
+            - secretRef:
+                name: docchat-api-keys
+                optional: true
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 1Gi }
+          # Up to 60 s to boot; liveness and readiness wait until it has.
+          startupProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 2
+            failureThreshold: 30
+          # /health calls no dependency: a slow database never restarts the pod.
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 10
+          # /ready checks the dependencies: a failing one only takes the pod out of the Service.
+          readinessProbe:
+            httpGet: { path: /ready, port: http }
+            periodSeconds: 5
+          lifecycle:
+            # Keep serving while the Service stops routing here, before SIGTERM arrives.
+            preStop:
+              sleep: { seconds: 5 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: storage, mountPath: /var/lib/docchat/storage }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: docchat-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docchat-api
+spec:
+  selector:
+    app.kubernetes.io/name: docchat-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

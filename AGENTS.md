@@ -87,6 +87,7 @@ Releases follow ADR-0017: a `chore(release): prepare vX.Y.Z` pull request rename
 | `make run` | Run the API locally with reload |
 | `make worker` | Run the ingestion worker locally; it needs Redis at `CELERY_BROKER_URL` |
 | `make openapi` | Export `api/docs/openapi.json`, the contract the client's types are generated from |
+| `make secrets-dev` | Copy the API keys from `api/.env` into the dev cluster's Secret |
 | `make tilt-up` | Bring the full stack up on minikube |
 | `make eval-retrieval` | Score the retriever arms against the golden set |
 

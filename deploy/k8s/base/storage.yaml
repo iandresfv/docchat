@@ -1,0 +1,12 @@
+# Where `FsStorage` keeps the uploaded PDFs. The API writes them and the worker reads them, so
+# both pods mount this volume. ReadWriteOnce means one node, which is all minikube has; a cluster
+# with more nodes needs object storage instead.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docchat-storage
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi

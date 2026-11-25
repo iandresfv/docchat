@@ -1,0 +1,6 @@
+# The image needs pyproject.toml, uv.lock and src/; nothing else is sent to the builder.
+*
+!pyproject.toml
+!uv.lock
+!src/
+**/__pycache__

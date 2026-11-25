@@ -7,6 +7,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - `docchat ingest` stores the PDF and queues it for the worker instead of indexing it in the terminal; `--inline` keeps the previous behaviour (index here and wait), and an unreachable queue is reported in one line.
 ### Infrastructure
 - Kustomize base and a `dev` overlay (namespace `docchat-dev`) running Postgres 18 with pgvector as a StatefulSet and Redis as the Celery broker (append-only persistence, no eviction), both as non-root with read-only root filesystems; CI renders every overlay and validates it against the Kubernetes 1.35 schemas.
+- API container image (`api/Dockerfile`): uv multi-stage build, Python 3.13 slim, non-root user, dependencies cached in their own layer. The same image runs the `docchat-api` and `docchat-worker` Deployments, which share a volume for stored PDFs and read the API keys from a Secret that `make secrets-dev` fills from `api/.env`.
 
 ## [0.2.0] - 2026-11-20
 ### Added
