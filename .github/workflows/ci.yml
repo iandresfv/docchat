@@ -23,6 +23,7 @@ jobs:
       api: ${{ steps.filter.outputs.api }}
       client: ${{ steps.filter.outputs.client }}
       changelog: ${{ steps.filter.outputs.changelog }}
+      deploy: ${{ steps.filter.outputs.deploy }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
@@ -38,6 +39,9 @@ jobs:
               - '.github/workflows/ci.yml'
             changelog:
               - 'CHANGELOG.md'
+            deploy:
+              - 'deploy/**'
+              - '.github/workflows/ci.yml'
 
   api:
     needs: changes
@@ -58,6 +62,21 @@ jobs:
         run: uv run mypy
       - name: Tests
         run: uv run pytest
+
+  kustomize:
+    needs: changes
+    if: needs.changes.outputs.deploy == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Every overlay renders and is valid against the Kubernetes 1.35 schemas
+        run: |
+          for overlay in deploy/k8s/overlays/*/; do
+            echo "::group::$overlay"
+            kubectl kustomize "$overlay" | docker run --rm -i ghcr.io/yannh/kubeconform:v0.8.0 \
+              -strict -summary -kubernetes-version 1.35.0 -
+            echo "::endgroup::"
+          done
 
   changelog:
     needs: changes
