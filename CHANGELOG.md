@@ -2,6 +2,8 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-11-25
 ### Added
 - A Celery worker (`make worker`) that ingests a stored PDF as a background task taken from Redis. Failures that may pass on their own (Voyage or Pinecone busy, rate-limited or unreachable) are retried up to three times with exponential backoff; a PDF that cannot be read fails at once.
 - `docchat ingest` stores the PDF and queues it for the worker instead of indexing it in the terminal; `--inline` keeps the previous behaviour (index here and wait), and an unreachable queue is reported in one line.
@@ -47,6 +49,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - CI workflow with a path-filtered client job: lint, format check, type-check, tests, build and a generated-API-types drift check.
 - CI job for the API (lint, format check, strict type-check and tests against the locked dependencies), and a check that fails any pull request that neither adds a CHANGELOG bullet nor carries the `skip-changelog` label.
 
-[Unreleased]: https://github.com/iandresfv/docchat/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/iandresfv/docchat/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/iandresfv/docchat/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/iandresfv/docchat/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/iandresfv/docchat/releases/tag/v0.1.0
