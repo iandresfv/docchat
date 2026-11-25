@@ -1,4 +1,5 @@
-# The local cluster (minikube): namespace docchat-dev, readable logs, throwaway passwords.
+# The local cluster (minikube): namespace docchat-dev, readable logs, throwaway passwords and
+# live reload. `make tilt-up` applies it; `make k8s-dev` does without Tilt.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -8,6 +9,9 @@ resources:
   - namespace.yaml
   - ../../base
 
+patches:
+  - path: live-reload.yaml
+
 configMapGenerator:
   - name: docchat-api-config
     behavior: merge
@@ -16,8 +20,9 @@ configMapGenerator:
       - LOG_FORMAT=text
 
 # Dev-only values, safe to commit. The API keys never live here: `make secrets-dev` copies them
-# from api/.env into the Secret docchat-api-keys.
+# from api/.env into the Secret docchat-api-keys. Tilt hides every secret value in its logs, so
+# the password must not be a word the logs use, such as "docchat".
 secretGenerator:
   - name: docchat-postgres
     literals:
-      - password=docchat
+      - password=local-dev-password

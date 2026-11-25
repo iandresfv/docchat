@@ -1,0 +1,43 @@
+# The dev overlay runs the image's `dev` target. Tilt copies each saved file into the running
+# containers, and these commands restart the process when a .py file changes. Development only:
+# the copied files must be writable, so the root filesystem is too.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docchat-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          command:
+            - uvicorn
+            - docchat.main:app
+            - --host=0.0.0.0
+            - --port=8000
+            - --reload
+            - --reload-dir=/app/src
+          securityContext:
+            readOnlyRootFilesystem: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docchat-worker
+spec:
+  template:
+    spec:
+      containers:
+        - name: worker
+          # Celery has no reload of its own: watchfiles restarts it (SIGINT first, so a running
+          # task gets a warm shutdown).
+          command:
+            - watchfiles
+            - --filter=python
+            - --target-type=command
+            - >-
+              celery --app=docchat.worker.celery_app worker --queues=ingestion --concurrency=2
+              --without-mingle --without-gossip
+            - /app/src
+          securityContext:
+            readOnlyRootFilesystem: false
