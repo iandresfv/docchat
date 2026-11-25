@@ -1,10 +1,13 @@
 .DEFAULT_GOAL := help
-.PHONY: help tools install run worker lint fmt type test test-external check openapi
+.PHONY: help tools install run worker lint fmt type test test-external check openapi secrets-dev
 
 API := uv run --directory api
+# Every cluster command names its context: nothing here may reach a cluster other than minikube.
+KUBECTL := kubectl --context minikube
+DEV_NAMESPACE := docchat-dev
 
 help: ## List every target
-	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 tools: ## Verify the required tools are installed
 	@for tool in uv pnpm; do \
@@ -44,3 +47,11 @@ check: lint type test ## Lint, type-check and test everything (the gate)
 
 openapi: ## Export api/docs/openapi.json, the contract the client's types come from
 	$(API) python scripts/export_openapi.py
+
+secrets-dev: ## Copy the API keys from api/.env into the dev cluster's Secret docchat-api-keys
+	@test -f api/.env || { echo "missing api/.env: copy api/.env.example and fill in the keys"; exit 1; }
+	@$(KUBECTL) create namespace $(DEV_NAMESPACE) --dry-run=client -o yaml | $(KUBECTL) apply -f - >/dev/null
+	@grep -E '^(ANTHROPIC|VOYAGE|PINECONE)_API_KEY=.' api/.env \
+		| $(KUBECTL) -n $(DEV_NAMESPACE) create secret generic docchat-api-keys \
+			--from-env-file=/dev/stdin --dry-run=client -o yaml \
+		| $(KUBECTL) apply -f -

@@ -1,4 +1,4 @@
-# The local cluster (minikube): namespace docchat-dev and throwaway passwords.
+# The local cluster (minikube): namespace docchat-dev, readable logs, throwaway passwords.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -8,7 +8,15 @@ resources:
   - namespace.yaml
   - ../../base
 
-# Dev-only values, safe to commit.
+configMapGenerator:
+  - name: docchat-api-config
+    behavior: merge
+    literals:
+      - APP_ENV=development
+      - LOG_FORMAT=text
+
+# Dev-only values, safe to commit. The API keys never live here: `make secrets-dev` copies them
+# from api/.env into the Secret docchat-api-keys.
 secretGenerator:
   - name: docchat-postgres
     literals:

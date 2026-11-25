@@ -8,5 +8,19 @@ labels:
       app.kubernetes.io/part-of: docchat
 
 resources:
+  - api.yaml
+  - worker.yaml
+  - storage.yaml
   - postgres.yaml
   - redis.yaml
+
+# Generated, so its name carries a hash of its content: changing a value renames it, and the
+# Deployments that read it roll out new pods.
+configMapGenerator:
+  - name: docchat-api-config
+    literals:
+      - APP_ENV=production
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      - CELERY_BROKER_URL=redis://docchat-redis:6379/1
+      - FS_STORAGE_DIR=/var/lib/docchat/storage
