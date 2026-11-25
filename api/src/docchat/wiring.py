@@ -5,13 +5,16 @@ Nothing else chooses an implementation.
 """
 
 from docchat.adapters.pdf.pypdf_extractor import PypdfExtractor
+from docchat.adapters.queue.celery_queue import CeleryQueue
 from docchat.adapters.storage.fs_storage import FsStorage
 from docchat.adapters.vector.pinecone_index import PineconeIndex
 from docchat.core.settings import Settings, require_secret
 from docchat.ports.object_storage import ObjectStorage
+from docchat.ports.task_queue import TaskQueue
 from docchat.ports.vector_index import VectorIndex
 from docchat.rag.components.registry import build_embeddings
 from docchat.services.ingestion_service import IngestionService
+from docchat.worker.celery_app import create_celery_app
 
 
 def build_storage(settings: Settings) -> ObjectStorage:
@@ -33,3 +36,7 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
         index=build_vector_index(settings),
         settings=settings,
     )
+
+
+def build_task_queue(settings: Settings) -> TaskQueue:
+    return CeleryQueue(create_celery_app(settings))

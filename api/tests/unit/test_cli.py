@@ -9,6 +9,7 @@ from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from typer.testing import CliRunner
 
 from docchat import cli
+from docchat.adapters.queue.inline_queue import InlineQueue
 from docchat.adapters.vector.memory_index import InMemoryIndex
 from docchat.core.settings import Settings
 from docchat.ports.vector_index import Chunk, VectorIndex
@@ -26,7 +27,28 @@ def cli_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Settings:
     return settings
 
 
-def test_ingest_prints_the_page_and_chunk_counts(
+def test_ingest_queues_the_stored_pdf_and_prints_the_task(
+    cli_settings: Settings,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    make_pdf: Callable[[Sequence[str]], bytes],
+    offline_ingestion: OfflineIngestion,
+) -> None:
+    index = InMemoryIndex()
+    service = offline_ingestion(cli_settings, index)
+    monkeypatch.setattr(cli, "build_task_queue", lambda _: InlineQueue(service.run))
+    pdf = tmp_path / "doc.pdf"
+    pdf.write_bytes(make_pdf(["First.", "Second."]))
+    pdf_id = UUID("00000000-0000-4000-8000-000000000002")
+
+    result = runner.invoke(cli.app, ["ingest", str(pdf), "--pdf-id", str(pdf_id)])
+
+    assert result.exit_code == 0, result.output
+    assert re.search(r"task    inline-[0-9a-f-]{36}\n", result.output)
+    assert index.count(pdf_id) == 2
+
+
+def test_ingest_inline_prints_the_page_and_chunk_counts(
     cli_settings: Settings,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -39,11 +61,29 @@ def test_ingest_prints_the_page_and_chunk_counts(
     pdf = tmp_path / "doc.pdf"
     pdf.write_bytes(make_pdf(["First.", "Second."]))
 
-    result = runner.invoke(cli.app, ["ingest", str(pdf)])
+    result = runner.invoke(cli.app, ["ingest", str(pdf), "--inline"])
 
     assert result.exit_code == 0, result.output
     assert "pages   2" in result.output
     assert "chunks  2" in result.output
+
+
+def test_an_unreachable_queue_is_one_line_not_a_traceback(
+    cli_settings: Settings,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    make_pdf: Callable[[Sequence[str]], bytes],
+) -> None:
+    # Port 9 (discard) has no Redis behind it on any machine that runs the tests.
+    monkeypatch.setattr(cli_settings, "celery_broker_url", "redis://127.0.0.1:9/1")
+    pdf = tmp_path / "doc.pdf"
+    pdf.write_bytes(make_pdf(["Text."]))
+
+    result = runner.invoke(cli.app, ["ingest", str(pdf)])
+
+    assert result.exit_code == 1
+    assert "The task queue is unreachable" in result.output
+    assert "Traceback" not in result.output
 
 
 def test_a_missing_key_is_one_line_not_a_traceback(
@@ -52,7 +92,7 @@ def test_a_missing_key_is_one_line_not_a_traceback(
     pdf = tmp_path / "doc.pdf"
     pdf.write_bytes(make_pdf(["Text."]))
 
-    result = runner.invoke(cli.app, ["ingest", str(pdf)])
+    result = runner.invoke(cli.app, ["ingest", str(pdf), "--inline"])
 
     assert result.exit_code == 1
     assert "VOYAGE_API_KEY is not set" in result.output
