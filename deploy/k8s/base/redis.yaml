@@ -1,0 +1,81 @@
+# The Celery broker: a queued ingestion waits here until a worker acknowledges it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docchat-redis
+  labels:
+    app.kubernetes.io/name: docchat-redis
+    app.kubernetes.io/component: broker
+spec:
+  replicas: 1
+  # One volume, so the old pod stops before the new one starts.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docchat-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docchat-redis
+        app.kubernetes.io/component: broker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999 # the image's redis user
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: redis:8.8-alpine
+          # Append-only file: queued tasks survive a restart. noeviction: when memory runs out,
+          # writes fail loudly instead of Redis silently dropping queued tasks.
+          args: [--appendonly, "yes", --maxmemory, 128mb, --maxmemory-policy, noeviction]
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 192Mi }
+          readinessProbe:
+            exec:
+              command: [redis-cli, ping]
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: [redis-cli, ping]
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: data, mountPath: /data }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: docchat-redis
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docchat-redis
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docchat-redis
+spec:
+  selector:
+    app.kubernetes.io/name: docchat-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

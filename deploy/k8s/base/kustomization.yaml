@@ -1,0 +1,12 @@
+# The workloads every environment runs. An overlay adds the namespace, the secrets and its
+# differences: `kubectl kustomize deploy/k8s/overlays/dev`.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: docchat
+
+resources:
+  - postgres.yaml
+  - redis.yaml

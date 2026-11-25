@@ -1,0 +1,15 @@
+# The local cluster (minikube): namespace docchat-dev and throwaway passwords.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: docchat-dev
+
+resources:
+  - namespace.yaml
+  - ../../base
+
+# Dev-only values, safe to commit.
+secretGenerator:
+  - name: docchat-postgres
+    literals:
+      - password=docchat

@@ -34,6 +34,3 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 var/
-
-# Kubernetes local secrets
-deploy/k8s/overlays/dev/.secret.local.yaml
