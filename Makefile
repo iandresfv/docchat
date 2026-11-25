@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help tools install run worker lint fmt type test test-external check openapi secrets-dev
+.PHONY: help tools install run worker lint fmt type test test-external check openapi secrets-dev tilt-up tilt-down k8s-dev k8s-delete
 
 API := uv run --directory api
 # Every cluster command names its context: nothing here may reach a cluster other than minikube.
@@ -7,7 +7,7 @@ KUBECTL := kubectl --context minikube
 DEV_NAMESPACE := docchat-dev
 
 help: ## List every target
-	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 tools: ## Verify the required tools are installed
 	@for tool in uv pnpm; do \
@@ -55,3 +55,18 @@ secrets-dev: ## Copy the API keys from api/.env into the dev cluster's Secret do
 		| $(KUBECTL) -n $(DEV_NAMESPACE) create secret generic docchat-api-keys \
 			--from-env-file=/dev/stdin --dry-run=client -o yaml \
 		| $(KUBECTL) apply -f -
+
+tilt-up: ## Bring the full stack up on minikube with live reload; the Tilt UI is on :10350
+	tilt up
+
+tilt-down: ## Remove what tilt-up deployed; Postgres keeps its volume
+	tilt down
+
+k8s-dev: secrets-dev ## Build the dev image into minikube and apply the dev overlay, without Tilt
+	docker build --target dev -t docchat-api:latest api
+	minikube image load docchat-api:latest
+	$(KUBECTL) apply -k deploy/k8s/overlays/dev
+	$(KUBECTL) -n $(DEV_NAMESPACE) rollout restart deploy/docchat-api deploy/docchat-worker
+
+k8s-delete: ## Delete the dev namespace and everything in it, volumes included
+	$(KUBECTL) delete namespace $(DEV_NAMESPACE) --ignore-not-found

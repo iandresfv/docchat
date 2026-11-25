@@ -31,12 +31,16 @@ spec:
         - name: worker
           image: docchat-api
           imagePullPolicy: IfNotPresent
+          # Mingle and gossip coordinate several workers; with one, they only add Redis traffic
+          # and a second of startup.
           command:
             - celery
             - --app=docchat.worker.celery_app
             - worker
             - --queues=ingestion
             - --concurrency=2
+            - --without-mingle
+            - --without-gossip
           envFrom:
             - configMapRef:
                 name: docchat-api-config
@@ -53,7 +57,9 @@ spec:
               command:
                 - sh
                 - -c
-                - celery --app=docchat.worker.celery_app inspect ping --destination "celery@$HOSTNAME"
+                - >-
+                  celery --app=docchat.worker.celery_app inspect ping --timeout=10
+                  --destination="celery@$HOSTNAME"
             initialDelaySeconds: 30
             periodSeconds: 60
             timeoutSeconds: 20

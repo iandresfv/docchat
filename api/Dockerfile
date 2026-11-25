@@ -26,7 +26,22 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-editable
 
-# Runtime: the same Python, the virtualenv and an unprivileged user. No uv, no compilers.
+# Dev: what Tilt builds. The project is installed editable, so Python imports straight from
+# /app/src, where Tilt syncs every saved file; uvicorn --reload and watchfiles then restart.
+FROM builder AS dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev \
+    && chown -R 65532:65532 /app/src
+ENV PATH=/app/.venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/tmp
+USER 65532:65532
+EXPOSE 8000
+CMD ["uvicorn", "docchat.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# Runtime: the same Python, the virtualenv and an unprivileged user. No uv, no compilers. The
+# last stage, so a plain `docker build` produces it.
 FROM ${PYTHON_IMAGE} AS runtime
 COPY --from=builder /app/.venv /app/.venv
 # The user has no home directory: caches (Voyage's tokenizer) go to /tmp, the one writable path

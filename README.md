@@ -163,10 +163,11 @@ agent](docs/adr/0005-langgraph-state-graph-no-agent.md).
 
 ### Prerequisites
 
-| Tool                                                               | Needed for          |
-| ------------------------------------------------------------------ | ------------------- |
-| [Node.js 24+](https://nodejs.org/) and [pnpm 12](https://pnpm.io/) | Client              |
-| [Docker](https://www.docker.com/)                                  | Client image        |
+| Tool                                                                                                      | Needed for            |
+| --------------------------------------------------------------------------------------------------------- | --------------------- |
+| [Node.js 24+](https://nodejs.org/) and [pnpm 12](https://pnpm.io/)                                        | Client                |
+| [Docker](https://www.docker.com/)                                                                         | Client and API images |
+| [uv](https://docs.astral.sh/uv/), [minikube](https://minikube.sigs.k8s.io/) and [Tilt](https://tilt.dev/) | API                   |
 
 ```bash
 git clone https://github.com/iandresfv/docchat.git
@@ -211,6 +212,21 @@ docker run -p 8080:8080 -e API_UPSTREAM=http://host.docker.internal:8000 docchat
 
 Unprivileged nginx serving the SPA on port 8080 and proxying `/api` with
 buffering disabled for SSE.
+
+### Run the API on minikube
+
+Copy `api/.env.example` to `api/.env` and fill in the Anthropic, Voyage and
+Pinecone keys, then:
+
+```bash
+minikube start
+make tilt-up        # Tilt UI on http://localhost:10350, API on http://localhost:8000
+```
+
+Tilt deploys the API, the ingestion worker, Postgres and Redis to the
+`docchat-dev` namespace, and reloads both Python processes on every save. The
+`ingest-sample` button queues `api/evals/golden/sample.pdf`; the worker's log
+shows it being indexed.
 
 ---
 
