@@ -74,7 +74,8 @@ are required, history must be linear, and force-pushes and deletion are blocked.
 
 Releases follow ADR-0017: a `chore(release): prepare vX.Y.Z` pull request renames
 `[Unreleased]` to a dated section and bumps the version in `api/pyproject.toml` and
-`client/package.json`; once it merges, an annotated `vX.Y.Z` tag is pushed from `main`.
+`client/package.json`; once it merges, an annotated `vX.Y.Z` tag is pushed from `main`. The tag
+publishes the API image to GHCR (`images.yml`) and then the GitHub Release (`release.yml`).
 
 ## Commands
 
